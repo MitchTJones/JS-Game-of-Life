@@ -1,0 +1,233 @@
+<html>
+<head>
+	<meta charset='UTF-8'> 
+	<link rel='stylesheet' href='css/normalize.css'>
+	<link rel='stylesheet' href='css/sliders.css'>
+	<link rel='stylesheet' href='css/main.css'>
+	<script src='js/functions.js'></script>
+	<script src='lib/jquery.min.js'></script>
+	<title>Game of Life</title>
+</head>
+<body>
+	<canvas id='cvs'></canvas>
+	<div class='jumbo' id='settings' style='display:none'>
+		<h1>Settings</h1>
+		<div class='cell'>
+			<h2>Dimensions</h2>
+			<div class='g3' id='dims'>
+					<b>Cell Size: </b><input type='number' id='size' min='5' max='50'>
+					<b>Padding: </b><input type='number' id='padding' min='0' max='10'>
+					<div id='previews'>
+						<div class='preview'></div>
+						<div class='preview'></div>
+						<div class='preview'></div>
+					</div>
+			</div>
+		</div>
+	</div>
+	<button id='show-left' class='top left show' style='display:none'>
+		<img class='invert' src='icons/arrow.png'>
+	</button>
+	<div id='left' class='flex fd-row top left'>
+		<div class='grid controls'>
+			<button id='run' class='green circle'>
+				<img class='invert' src='icons/play.png'>
+			</button>
+			<button id='hide-left' class='nopad gray circle'>
+				<img class='invert tr-up' src='icons/arrow.png'>
+			</button>
+			<button id='clr' class='red circle'>
+				<img class='invert' src='icons/x.png'>
+			</button>
+			<div></div>
+			<button id='inf' class='blue circle'>
+				<img class='invert' src='icons/infinity.png'>
+			</button>
+			<div></div>
+			<button id='stt' class='yellow circle'>
+				<img class='invert' src='icons/gear.png'>
+			</button>
+			<div></div>
+			<a target='_blank' href='https://www.mitchelljones.com/projects/gol'>
+				<button id='hlp' class='blue circle'>
+					<img class='invert' src='icons/help.png'>
+				</button>
+			</a>
+		</div>
+	</div>
+	<div id='rght' class='controls fd-row top right'>
+		<div class='info' id='coords'><span id='x'>0</span>,<span id='y'>0</span></div>
+		<div class='info' id='real-fps'><span id='realfps'></span><span> FPS</span></div>
+	</div>
+	<button id='show-down' class='bot left show' style='display:none'>
+		<img class='invert tr-up' src='icons/arrow.png'>
+	</button>
+	<div id='down' class='vw bot'>
+		<div class='flex controls fd-row ai-center margin'>
+			<button id='hide-down' class='nopad gray circle'>
+				<img class='invert' src='icons/arrow.png'>
+			</button>
+			<input class='grow' type='range' min='1' max='120' value='30' id='fps-slider'>
+			<div id='fps'><span id='fps-target'></span> FPS</div>
+		</div>
+	</div>
+	<script src='js/main.js'></script>
+	<script>
+		var	cvs,ctx,
+			btn_run, btn_clr, tgl_inf, tgl_stt, sld_fps,
+			img_run, dlg_stt, inf_c_x, inf_c_y,
+			hde_lft, hde_dwn, shw_lft, shw_dwn, lft,dwn,
+			tgt_fps, rll_fps, inp_sze, inp_pad, previews;
+
+		$(document).ready(function() {
+			var jq_cvs = $('#cvs');
+			cvs = jq_cvs[0];
+			ctx = cvs.getContext('2d');
+			btn_run = $('#run');
+			img_run = $('#run img');
+			btn_clr = $('#clr');
+			tgl_inf = $('#inf');
+			tgl_stt = $('#stt');
+			dlg_stt = $('#settings');
+			inf_c_x = $('#x');
+			inf_c_y = $('#y');
+			sld_fps = $('#fps-slider');
+			hde_lft = $('#hide-left');
+			shw_lft = $('#show-left');
+			hde_dwn = $('#hide-down');
+			shw_dwn = $('#show-down');
+			lft = $('#left');
+			dwn = $('#down');
+			tgt_fps = $('#fps-target');
+			rll_fps = $('#realfps');
+			inp_sze = $('#size');
+			inp_pad = $('#padding');
+			previews= $('.preview');
+			jq_cvs.mousemove(function(e) {
+				mMove = true;
+				mPos = {
+					x: e.clientX - mRect.left,
+					y: e.clientY - mRect.top
+				};
+			});
+			jq_cvs.mouseup(function(e) {
+				mClick = true;
+			});
+			btn_run.click(function() {
+				play(!playing);
+			});
+			btn_clr.click(function() {
+				reset();
+				play(false);
+			});
+			tgl_inf.click(function() {
+				infi(!infinity);
+			});
+			tgl_stt.click(function() {
+				onstt();
+			});
+			sld_fps[0].oninput = function() {
+				fps = this.value
+				tgt_fps.html(fps);
+			};
+			inp_sze[0].oninput = function() {
+				onsize(this.value);
+			};
+			inp_pad[0].oninput = function() {
+				onpad(this.value);
+			};
+			hde_lft.click(function() {
+				lft.slideUp(function() {
+					shw_lft.show();
+				});
+			});
+			shw_lft.click(function() {
+				shw_lft.hide();
+				lft.slideDown();
+			});
+			hde_dwn.click(function() {
+				dwn.slideUp(function() {
+					shw_dwn.show();
+				});
+			});
+			shw_dwn.click(function() {
+				shw_dwn.hide();
+				dwn.slideDown();
+			});
+			sld_fps.val(fps);
+			tgt_fps.html(fps);
+			inp_sze.val(RECT_WIDTH);
+			inp_pad.val(RECT_PADDING);
+			onsize(RECT_WIDTH);
+			onpad(RECT_PADDING);
+			init();
+		});
+		function coords(x,y) {
+			inf_c_x.html(x.toString());
+			inf_c_y.html(y.toString());
+		}
+
+		function play(b) {
+			playing = b;
+			if (playing)
+				img_run.attr('src', 'icons/pause.png');
+			else
+				img_run.attr('src', 'icons/play.png');
+		}
+
+		function infi(b) {
+			infinity = b;
+			if (infinity) {
+				tgl_inf.removeClass('lightblue');
+				tgl_inf.addClass('blue');
+			} else {
+				tgl_inf.removeClass('blue');
+				tgl_inf.addClass('lightblue');
+			}
+		}
+
+		function onstt() {
+			var b = tgl_stt.hasClass('active');
+			if (b) {
+				dlg_stt.hide();
+				tgl_stt.removeClass('active');
+			} else {
+				dlg_stt.show();
+				tgl_stt.addClass('active');
+			}
+		}
+
+		function onsize(v) {
+			var min = parseInt(inp_sze.attr('min'));
+			var max = parseInt(inp_sze.attr('max'));
+			if (v < min || v > max) {
+				inp_sze.css('border', '1px solid red');
+				return;
+			}
+			inp_sze.css('border', '1px solid gray');
+			RECT_WIDTH = parseInt(v);
+			updatePreview();
+			reset();
+		}
+
+		function onpad(v) {
+			var min = parseInt(inp_pad.attr('min'));
+			var max = parseInt(inp_pad.attr('max'));
+			if (v < min || v > max) {
+				inp_pad.css('border', '1px solid red');
+				return;
+			}
+			inp_pad.css('border', '1px solid gray');
+			RECT_PADDING = parseInt(v);
+			updatePreview();
+			reset();
+		}
+
+		function updatePreview() {
+			previews.css('width', RECT_WIDTH);
+			previews.css('height', RECT_WIDTH);
+			previews.css('margin', '0 ' + RECT_PADDING);
+		}
+	</script>
+</body>
+</html>
