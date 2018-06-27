@@ -30,25 +30,25 @@
 	</button>
 	<div id='left' class='flex fd-row top left'>
 		<div class='grid controls'>
-			<button id='run' class='green circle'>
+			<button id='run' class='green circle' title='Play (Space)'>
 				<img class='invert' src='icons/play.png'>
 			</button>
-			<button id='hide-left' class='nopad gray circle'>
+			<button id='hide-left' class='nopad gray circle' title='Hide Toolbar'>
 				<img class='invert tr-up' src='icons/arrow.png'>
 			</button>
-			<button id='clr' class='red circle'>
+			<button id='clr' class='red circle' title='Clear (C)'>
 				<img class='invert' src='icons/x.png'>
 			</button>
 			<div></div>
-			<button id='inf' class='blue circle'>
+			<button id='inf' class='blue circle' title='Toggle Infinite Plane (P)'>
 				<img class='invert' src='icons/infinity.png'>
 			</button>
 			<div></div>
-			<button id='stt' class='yellow circle'>
+			<button id='stt' class='yellow circle' title='Settings'>
 				<img class='invert' src='icons/gear.png'>
 			</button>
 			<div></div>
-			<a target='_blank' href='https://www.mitchelljones.com/projects/gol'>
+			<a target='_blank' href='https://www.mitchelljones.com/projects/gol' title='Documentation'>
 				<button id='hlp' class='blue circle'>
 					<img class='invert' src='icons/help.png'>
 				</button>
@@ -64,7 +64,7 @@
 	</button>
 	<div id='down' class='vw bot'>
 		<div class='flex controls fd-row ai-center margin'>
-			<button id='hide-down' class='nopad gray circle'>
+			<button id='hide-down' class='nopad gray circle' title='Hide Frame Slider'>
 				<img class='invert' src='icons/arrow.png'>
 			</button>
 			<input class='grow' type='range' min='1' max='120' value='30' id='fps-slider'>
@@ -136,32 +136,46 @@
 			inp_pad[0].oninput = function() {
 				onpad(this.value);
 			};
-			hde_lft.click(function() {
-				lft.slideUp(function() {
-					shw_lft.show();
-				});
-			});
-			shw_lft.click(function() {
-				shw_lft.hide();
-				lft.slideDown();
-			});
-			hde_dwn.click(function() {
-				dwn.slideUp(function() {
-					shw_dwn.show();
-				});
-			});
-			shw_dwn.click(function() {
-				shw_dwn.hide();
-				dwn.slideDown();
-			});
+			hde_lft.click(hide_left);
+			shw_lft.click(show_left);
+			hde_dwn.click(hide_down);
+			shw_dwn.click(show_down);
 			sld_fps.val(fps);
 			tgt_fps.html(fps);
 			inp_sze.val(RECT_WIDTH);
 			inp_pad.val(RECT_PADDING);
+			$(document).keydown(function(e) {
+				if (e.which == 32)  {// spacebar
+					play(!playing);
+				} else if (e.which == 67) { // C
+					reset();
+					play(false);
+				} else if (e.which == 80) { // P
+					infi(!infinity);
+				}
+			});
 			onsize(RECT_WIDTH);
 			onpad(RECT_PADDING);
 			init();
 		});
+		function hide_down() {
+			dwn.slideUp(function() {
+				shw_dwn.show();
+			});
+		}
+		function hide_left() {
+			lft.slideUp(function() {
+				shw_lft.show();
+			});
+		}
+		function show_left() {
+			shw_lft.hide();
+			lft.slideDown();
+		}
+		function show_down() {
+			shw_dwn.hide();
+			dwn.slideDown();
+		}
 		function coords(x,y) {
 			inf_c_x.html(x.toString());
 			inf_c_y.html(y.toString());
