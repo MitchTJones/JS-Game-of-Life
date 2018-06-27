@@ -10,18 +10,25 @@
 </head>
 <body>
 	<canvas id='cvs'></canvas>
+	<div class='jumbo' id='help'>
+		<h1>Conway's Game of Life</h1>
+		<div class='row'>
+			<a class='m-15' href='https://www.mitchelljones.com/projects/gol/intro'>What is this?</a>
+			<button class='p-10' id='dismiss'>I know what it is; let me in!</button>
+		</div>
+	</div>
 	<div class='jumbo' id='settings' style='display:none'>
 		<h1>Settings</h1>
 		<div class='cell'>
 			<h2>Dimensions</h2>
 			<div class='g3' id='dims'>
-					<b>Cell Size: </b><input type='number' id='size' min='5' max='50'>
-					<b>Padding: </b><input type='number' id='padding' min='0' max='10'>
-					<div id='previews'>
-						<div class='preview'></div>
-						<div class='preview'></div>
-						<div class='preview'></div>
-					</div>
+				<b>Cell Size: </b><input type='number' id='size' min='5' max='50'>
+				<b>Padding: </b><input type='number' id='padding' min='0' max='10'>
+				<div id='previews'>
+					<div class='preview'></div>
+					<div class='preview'></div>
+					<div class='preview'></div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -48,7 +55,7 @@
 				<img class='invert' src='icons/gear.png'>
 			</button>
 			<div></div>
-			<a target='_blank' href='https://www.mitchelljones.com/projects/gol' title='Documentation'>
+			<a target='_blank' href='https://www.mitchelljones.com/projects/gol/intro' title='Documentation'>
 				<button id='hlp' class='blue circle'>
 					<img class='invert' src='icons/help.png'>
 				</button>
@@ -102,6 +109,7 @@
 			rll_fps = $('#realfps');
 			inp_sze = $('#size');
 			inp_pad = $('#padding');
+			dismiss = $('#dismiss');
 			previews= $('.preview');
 			jq_cvs.mousemove(function(e) {
 				mMove = true;
@@ -144,13 +152,16 @@
 			tgt_fps.html(fps);
 			inp_sze.val(RECT_WIDTH);
 			inp_pad.val(RECT_PADDING);
-			$(document).keydown(function(e) {
+			dismiss.click(function() {
+				$('#help').hide();
+			});
+			$(document).keypress(function(e) {
 				if (e.which == 32)  {// spacebar
 					play(!playing);
-				} else if (e.which == 67) { // C
+				} else if (e.which == 99) { // C
 					reset();
 					play(false);
-				} else if (e.which == 80) { // P
+				} else if (e.which == 112) { // P
 					infi(!infinity);
 				}
 			});
